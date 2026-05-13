@@ -41,6 +41,12 @@ class VetController {
 		this.vetRepository = vetRepository;
 	}
 
+	/**
+	 * Displays a paginated list of vets in the HTML view.
+	 * @param page the page number to display, defaults to 1
+	 * @param model the model to populate with vet data and pagination info
+	 * @return the name of the vet list view
+	 */
 	@GetMapping("/vets.html")
 	public String showVetList(@RequestParam(defaultValue = "1") int page, Model model) {
 		// Here we are returning an object of type 'Vets' rather than a collection of Vet
@@ -66,6 +72,10 @@ class VetController {
 		return vetRepository.findAll(pageable);
 	}
 
+	/**
+	 * Returns the full list of vets as a JSON response body.
+	 * @return a {@link Vets} object containing all vets
+	 */
 	@GetMapping({ "/vets" })
 	public @ResponseBody Vets showResourcesVetList() {
 		// Here we are returning an object of type 'Vets' rather than a collection of Vet

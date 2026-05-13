@@ -56,11 +56,22 @@ class OwnerController {
 		this.owners = owners;
 	}
 
+	/**
+	 * Prevents binding of the id field to protect against mass assignment attacks.
+	 * @param dataBinder the data binder to configure
+	 */
 	@InitBinder
 	public void setAllowedFields(WebDataBinder dataBinder) {
 		dataBinder.setDisallowedFields("id", "*.id");
 	}
 
+	/**
+	 * Resolves the {@link Owner} model attribute for the current request. Returns a new
+	 * Owner if no ownerId is present, otherwise loads the existing one from the
+	 * repository.
+	 * @param ownerId the owner ID from the URL, or null for new owner forms
+	 * @return the found or newly created {@link Owner}
+	 */
 	@ModelAttribute("owner")
 	public Owner findOwner(@PathVariable(name = "ownerId", required = false) Integer ownerId) {
 		return ownerId == null ? new Owner()
@@ -69,11 +80,22 @@ class OwnerController {
 							+ ". Please ensure the ID is correct " + "and the owner exists in the database."));
 	}
 
+	/**
+	 * Displays the form for creating a new owner.
+	 * @return the name of the create/update owner form view
+	 */
 	@GetMapping("/owners/new")
 	public String initCreationForm() {
 		return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
 	}
 
+	/**
+	 * Processes the new owner form submission. Saves the owner if validation passes.
+	 * @param owner the owner to create
+	 * @param result binding and validation results
+	 * @param redirectAttributes attributes for the redirect
+	 * @return a redirect to the new owner's detail page, or the form view if errors exist
+	 */
 	@PostMapping("/owners/new")
 	public String processCreationForm(@Valid Owner owner, BindingResult result, RedirectAttributes redirectAttributes) {
 		if (result.hasErrors()) {
@@ -86,11 +108,24 @@ class OwnerController {
 		return "redirect:/owners/" + owner.getId();
 	}
 
+	/**
+	 * Displays the owner search form.
+	 * @return the name of the find owners view
+	 */
 	@GetMapping("/owners/find")
 	public String initFindForm() {
 		return "owners/findOwners";
 	}
 
+	/**
+	 * Processes the owner search form. Searches by last name and redirects directly to
+	 * the owner detail page if exactly one result is found.
+	 * @param page the page number to display
+	 * @param owner the owner object used to capture the last name search input
+	 * @param result binding and validation results
+	 * @param model the model to populate with search results
+	 * @return a redirect to the owner detail page, or the paginated owners list view
+	 */
 	@GetMapping("/owners")
 	public String processFindForm(@RequestParam(defaultValue = "1") int page, Owner owner, BindingResult result,
 			Model model) {
@@ -133,11 +168,24 @@ class OwnerController {
 		return owners.findByLastNameStartingWith(lastname, pageable);
 	}
 
+	/**
+	 * Displays the form for editing an existing owner.
+	 * @return the name of the create/update owner form view
+	 */
 	@GetMapping("/owners/{ownerId}/edit")
 	public String initUpdateOwnerForm() {
 		return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
 	}
 
+	/**
+	 * Processes the owner update form submission. Saves changes if validation passes and
+	 * the owner ID in the form matches the URL.
+	 * @param owner the owner with updated details
+	 * @param result binding and validation results
+	 * @param ownerId the owner ID from the URL
+	 * @param redirectAttributes attributes for the redirect
+	 * @return a redirect to the owner detail page, or the form view if errors exist
+	 */
 	@PostMapping("/owners/{ownerId}/edit")
 	public String processUpdateOwnerForm(@Valid Owner owner, BindingResult result, @PathVariable("ownerId") int ownerId,
 			RedirectAttributes redirectAttributes) {
