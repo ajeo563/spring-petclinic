@@ -57,11 +57,21 @@ class PetController {
 		this.types = types;
 	}
 
+	/**
+	 * Populates the pet types model attribute for use in pet forms.
+	 * @return a collection of all available {@link PetType} values
+	 */
 	@ModelAttribute("types")
 	public Collection<PetType> populatePetTypes() {
 		return this.types.findPetTypes();
 	}
 
+	/**
+	 * Resolves the {@link Owner} model attribute by loading the owner from the
+	 * repository.
+	 * @param ownerId the owner ID from the URL
+	 * @return the found {@link Owner}
+	 */
 	@ModelAttribute("owner")
 	public Owner findOwner(@PathVariable("ownerId") int ownerId) {
 		return this.owners.findById(ownerId)
@@ -69,6 +79,13 @@ class PetController {
 					"Owner not found with id: " + ownerId + ". Please ensure the ID is correct "));
 	}
 
+	/**
+	 * Resolves the {@link Pet} model attribute. Returns a new Pet if no petId is present,
+	 * otherwise loads the existing pet from the owner.
+	 * @param ownerId the owner ID from the URL
+	 * @param petId the pet ID from the URL, or null for new pet forms
+	 * @return the found or newly created {@link Pet}
+	 */
 	@ModelAttribute("pet")
 	public Pet findPet(@PathVariable("ownerId") int ownerId,
 			@PathVariable(name = "petId", required = false) Integer petId) {
@@ -83,17 +100,31 @@ class PetController {
 			.getPet(petId);
 	}
 
+	/**
+	 * Prevents binding of the id field on the owner to protect against mass assignment.
+	 * @param dataBinder the data binder to configure
+	 */
 	@InitBinder("owner")
 	public void initOwnerBinder(WebDataBinder dataBinder) {
 		dataBinder.setDisallowedFields("id", "*.id");
 	}
 
+	/**
+	 * Registers the {@link PetValidator} and prevents binding of the id field on the pet.
+	 * @param dataBinder the data binder to configure
+	 */
 	@InitBinder("pet")
 	public void initPetBinder(WebDataBinder dataBinder) {
 		dataBinder.setValidator(new PetValidator());
 		dataBinder.setDisallowedFields("id", "*.id");
 	}
 
+	/**
+	 * Displays the form for adding a new pet to an owner.
+	 * @param owner the owner to add the pet to
+	 * @param model the model map for the view
+	 * @return the name of the create/update pet form view
+	 */
 	@GetMapping("/pets/new")
 	public String initCreationForm(Owner owner, ModelMap model) {
 		Pet pet = new Pet();
@@ -101,6 +132,14 @@ class PetController {
 		return VIEWS_PETS_CREATE_OR_UPDATE_FORM;
 	}
 
+	/**
+	 * Processes the new pet form submission. Validates the pet and saves it to the owner.
+	 * @param owner the owner to add the pet to
+	 * @param pet the new pet to add
+	 * @param result binding and validation results
+	 * @param redirectAttributes attributes for the redirect
+	 * @return a redirect to the owner detail page, or the form view if errors exist
+	 */
 	@PostMapping("/pets/new")
 	public String processCreationForm(Owner owner, @Valid Pet pet, BindingResult result,
 			RedirectAttributes redirectAttributes) {
@@ -124,11 +163,24 @@ class PetController {
 		return "redirect:/owners/{ownerId}";
 	}
 
+	/**
+	 * Displays the form for editing an existing pet.
+	 * @return the name of the create/update pet form view
+	 */
 	@GetMapping("/pets/{petId}/edit")
 	public String initUpdateForm() {
 		return VIEWS_PETS_CREATE_OR_UPDATE_FORM;
 	}
 
+	/**
+	 * Processes the pet update form submission. Validates and saves the updated pet
+	 * details to the owner.
+	 * @param owner the owner of the pet
+	 * @param pet the pet with updated details
+	 * @param result binding and validation results
+	 * @param redirectAttributes attributes for the redirect
+	 * @return a redirect to the owner detail page, or the form view if errors exist
+	 */
 	@PostMapping("/pets/{petId}/edit")
 	public String processUpdateForm(Owner owner, @Valid Pet pet, BindingResult result,
 			RedirectAttributes redirectAttributes) {
